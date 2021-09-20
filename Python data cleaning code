@@ -1,0 +1,106 @@
+import pandas as pd
+import numpy as np
+import os
+import csv
+import re
+from datetime import datetime as dt
+
+
+#merging the different tables to one master table:
+
+master_df = pd.DataFrame()
+
+for file in os.listdir(os.getcwd()):
+    if file.endswith('.csv'):
+                     master_df = master_df.append(pd.read_csv(file))
+                     
+master_df.to_csv('Master2.CSV', index=False)
+
+df =pd.read_csv('C:/Users/E695700/Documents/People Analytics/Master2.csv')
+
+df.head()
+
+missing_values = ["n/a", "na", "--"]
+df = pd.read_csv('C:/Users/E695700/Documents/People Analytics/Master2.csv', na_values = missing_values)
+
+print(df)
+
+cnt=0
+for row in df['Employee Number']:
+    try:
+        int(row)
+        df.loc[cnt, 'Employee Number']=np.nan
+    except ValueError:
+        pass
+    cnt+=1
+    
+print(df.isnull().sum())
+
+missing_values = ["n/a", "na", "--"]
+df = pd.read_csv('C:/Users/E695700/Documents/People Analytics/Master2.csv', na_values = missing_values)
+
+print(df)
+
+df['Gender (M/F)'].fillna('U', inplace=True)
+
+df['Gender (M/F)'] = df['Gender (M/F)'].replace({'Male': 'M'})
+df['Gender (M/F)'] = df['Gender (M/F)'].replace({'Female': 'F'})
+
+df['Details of Medical Treatment'].fillna('U', inplace=True)
+
+df['Is the individual receiving medical treatment?'].fillna('U', inplace=True)
+
+df['Age (Y)'] = pd.to_numeric(df['Age (Y)'], errors='coerce')
+df["Age (Y)"] = df["Age (Y)"].fillna(value=df["Age (Y)"].mean())
+df.round({'Age (Y)', decimals=0)
+#df = df["Age (Y)"].astype(int)
+
+def cleanup(date):
+    patterns = [# 0) 1-12-1963
+                r'(\d{1,2})-(\d{1,2})-(\d{4})$',
+                # 1) 1789-7-14
+                r'(\d{4})-(\d{1,2})-(\d{1,2})$',
+                # 2) '1945-2'
+                r'(\d{4})-(\d{1,2})$',
+                # 3) 2-1883
+                r'(\d{1,2})-(\d{4})$'
+                ]
+
+    try: 
+        return str(int(date))
+    except ValueError:
+        pass
+
+    for pat in patterns:
+        q = re.match(pat, date)
+        if q: 
+            if pat == patterns[0]:
+                year = re.sub(patterns[0], r'\3', date)
+                month = re.sub(patterns[0], r'\2', date)
+                day = re.sub(patterns[0],  r'\1', date)
+                return '{0}-{1:0>2}-{2:0>2}'.format(year, month, day)
+            if pat == patterns[1]:
+                year = re.sub(patterns[1], r'\1', date)
+                month = re.sub(patterns[1], r'\2', date)
+                day = re.sub(patterns[1],  r'\3', date)
+                return '{0}-{1:0>2}-{2:0>2}'.format(year, month, day)
+            if pat == patterns[2]:
+                year = re.sub(patterns[2], r'\1', date)
+                month = re.sub(patterns[2], r'\2', date)
+                return '{0}-{1:0>2}'.format(year, month)
+            if pat == patterns[3]:
+                year = re.sub(patterns[3], r'\2', date)
+                month = re.sub(patterns[3], r'\1', date)
+                return '{0}-{1:0>2}'.format(year, month)
+            else:
+                return date
+
+def main():
+    dates = 1858.0, '1-12-1963', '1945-2', '7-2018', '1789-7-14', 
+    for date in dates: 
+        print('in: {}  out: {}'.format(date, cleanup(date)))
+
+if __name__ == "__main__":
+    main()
+
+df.to_csv("AllDetails7.csv", index=False)
