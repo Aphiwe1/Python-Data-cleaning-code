@@ -1,3 +1,4 @@
+#Import the necessary packages
 import pandas as pd
 import numpy as np
 import os
@@ -5,9 +6,7 @@ import csv
 import re
 from datetime import datetime as dt
 
-
-#merging the different tables to one master table:
-
+#Merging the different tables to one master table:
 master_df = pd.DataFrame()
 
 for file in os.listdir(os.getcwd()):
@@ -16,6 +15,7 @@ for file in os.listdir(os.getcwd()):
                      
 master_df.to_csv('Master2.CSV', index=False)
 
+#Read in the new single csv file from the above merged csv files
 df =pd.read_csv('C:/Users/E695700/Documents/People Analytics/Master2.csv')
 
 df.head()
@@ -41,20 +41,26 @@ df = pd.read_csv('C:/Users/E695700/Documents/People Analytics/Master2.csv', na_v
 
 print(df)
 
+#Fill in null values in gender column with 'U' for Unknown:
 df['Gender (M/F)'].fillna('U', inplace=True)
 
+#Replace Male and Female in the Gender column with 'M' and 'F', respectively:
 df['Gender (M/F)'] = df['Gender (M/F)'].replace({'Male': 'M'})
 df['Gender (M/F)'] = df['Gender (M/F)'].replace({'Female': 'F'})
 
+#Replace all null values in the column with 'U' for Unknown:
 df['Details of Medical Treatment'].fillna('U', inplace=True)
 
+#Replace all null values in the column with 'U' for Unknown:
 df['Is the individual receiving medical treatment?'].fillna('U', inplace=True)
 
+#Replace all null values with the mean age in the Age column:
 df['Age (Y)'] = pd.to_numeric(df['Age (Y)'], errors='coerce')
 df["Age (Y)"] = df["Age (Y)"].fillna(value=df["Age (Y)"].mean())
 df.round({'Age (Y)', decimals=0)
 #df = df["Age (Y)"].astype(int)
 
+#Date clean-up to get date into the same format:
 def cleanup(date):
     patterns = [# 0) 1-12-1963
                 r'(\d{1,2})-(\d{1,2})-(\d{4})$',
@@ -102,5 +108,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-df.to_csv("AllDetails7.csv", index=False)
+    
+#Export the 'clean" data to a csv: 
+df.to_csv("AllDetails.csv", index=False)
